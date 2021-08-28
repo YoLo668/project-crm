@@ -329,7 +329,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 	 */
 	function pageList(pageNo,pageSize) {
 
-		//将全选的复选框的狗✔干掉
+		//将全选的复选框的✔干掉
 		$("#qx").prop("checked",false);
 
 		//查询前,将隐藏域中保存的信息取出来,重新赋予到搜索框中
