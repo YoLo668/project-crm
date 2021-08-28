@@ -55,6 +55,86 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 
 		//页面加载完毕后,取出关联的市场活动信息列表
 		showActivityList();
+
+		//为关联市场活动的模态窗口中的搜索框绑定事件,通过触发回车键,查询并展现所需市场活动列表
+        $("#aname").keydown(function (event) {
+            //如果是回车键
+            if (event.keyCode==13){
+                // alert("查询并展现市场活动列表");
+                $.ajax({
+                    url:"workbench/clue/getActivityListByNameAndNotByClueId.do",
+                    data:{
+
+                       "aname":$.trim($("#aname").val()),
+                       "clueId":"${c.id}"
+                    },
+                    type:"get",
+                    dataType:"json",
+                    success:function (data) {
+
+                        var html="";
+                        $.each(data,function (i,n) {
+                            html += '<tr>';
+                            html += '<td><input type="checkbox" name="xz" value="'+n.id+'"/></td>';
+                            html += '<td>'+n.name+'</td>';
+                            html += '<td>'+n.startDate+'</td>';
+                            html += '<td>'+n.endDate+'</td>';
+                            html += '<td>'+n.owner+'</td>';
+							html += '</tr>';
+
+                        })
+                        $("#activitySearchBody").html(html);
+
+                    }
+                })
+
+
+                //展现完列表后,将模态窗口默认的回车行为禁用掉
+                return false;
+            }
+
+        })
+        //为关联按钮绑定事件,执行关联表的添加操作
+        $("#bundBtn").click(function () {
+            var $xz = $("input[name=xz]:checked");
+            if ($xz.length==0){
+                alert("请选择需要关联的市场活动");
+                //选中的可能是一条或者多条
+            } else{
+                var param = "cid=${c.id}&";
+                for (var i = 0; i < $xz.length; i++) {
+                    param +="aid="+$($xz[i]).val();
+                    if (i<$xz.length-1){
+                        param +="&";
+                    }
+                    // alert(param);
+                    $.ajax({
+                        url:"workbench/clue/bund.do",
+                        data:param,
+                        type:"post",
+                        dataType:"json",
+                        success:function (data) {
+
+                            if (data.success){
+                                //关联成功
+                                //刷新关联的市场活动列表
+                                showActivityList();
+
+                                //清除搜索框中的信息 复选框中的✔干掉 清空activitySearchBody中的内容
+                                $("#aname").val("");
+                                $("#checkedBtn").prop("checked",false);
+                                $("#activitySearchBody").html("");
+                                //关闭模态窗口
+                                $("#bundModal").modal("hide");
+                            } else{
+                                alert("关联市场活动失败")
+                            }
+                        }
+                    })
+                }
+            }
+
+        })
 	});
 
 	function showActivityList() {
@@ -122,7 +202,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					<div class="btn-group" style="position: relative; top: 18%; left: 8px;">
 						<form class="form-inline" role="form">
 						  <div class="form-group has-feedback">
-						    <input type="text" class="form-control" style="width: 300px;" placeholder="请输入市场活动名称，支持模糊查询">
+						    <input type="text" class="form-control" id="aname" style="width: 300px;" placeholder="请输入市场活动名称，支持模糊查询">
 						    <span class="glyphicon glyphicon-search form-control-feedback"></span>
 						  </div>
 						</form>
@@ -130,7 +210,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 					<table id="activityTable" class="table table-hover" style="width: 900px; position: relative;top: 10px;">
 						<thead>
 							<tr style="color: #B3B3B3;">
-								<td><input type="checkbox"/></td>
+								<td><input type="checkbox" id="checkedBtn"/></td>
 								<td>名称</td>
 								<td>开始日期</td>
 								<td>结束日期</td>
@@ -138,8 +218,8 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 								<td></td>
 							</tr>
 						</thead>
-						<tbody>
-							<tr>
+						<tbody id="activitySearchBody">
+							<%--<tr>
 								<td><input type="checkbox"/></td>
 								<td>发传单</td>
 								<td>2020-10-10</td>
@@ -152,13 +232,13 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 								<td>2020-10-10</td>
 								<td>2020-10-20</td>
 								<td>zhangsan</td>
-							</tr>
+							</tr>--%>
 						</tbody>
 					</table>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">关联</button>
+					<button type="button" class="btn btn-primary" id="bundBtn">关联</button>
 				</div>
 			</div>
 		</div>
@@ -331,7 +411,7 @@ String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 
 			<h3>${c.fullname}${c.appellation} <small>${c.company}</small></h3>
 		</div>
 		<div style="position: relative; height: 50px; width: 500px;  top: -72px; left: 700px;">
-			<button type="button" class="btn btn-default" onclick="window.location.href='workbench/clue/convert.jsp';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
+			<button type="button" class="btn btn-default" onclick="window.location.href='workbench/clue/convert.jsp?id=${c.id}&fullname=${c.fullname}&appellation=${c.appellation}&company=${c.company}&owner=${c.owner}';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
 			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#editClueModal"><span class="glyphicon glyphicon-edit"></span> 编辑</button>
 			<button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 		</div>

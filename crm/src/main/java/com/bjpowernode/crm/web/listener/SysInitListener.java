@@ -50,7 +50,22 @@ public class SysInitListener implements ServletContextListener {
             application.setAttribute(key,map.get(key));
         }
         System.out.println("服务器处理数据字典结束");
+        //-----------------------
+        //数据字典处理完毕后,处理Stage2Possibility.properties文件
+        /*
 
+            处理Stage2Possibility.properties文件步骤：
+                解析该文件，将该属性文件中的键值对关系处理成为java中键值对关系（map）
+
+                Map<String(阶段stage),String(可能性possibility)> pMap = ....
+                pMap.put("01资质审查",10);
+                pMap.put("02需求分析",25);
+                pMap.put("07...",...);
+
+                pMap保存值之后，放在服务器缓存中
+                application.setAttribute("pMap",pMap);
+
+         */
     }
 
     @Override
