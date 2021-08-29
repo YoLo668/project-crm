@@ -8,9 +8,7 @@ import com.bjpowernode.crm.utils.ServiceFactory;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SysInitListener implements ServletContextListener {
     /*
@@ -66,6 +64,19 @@ public class SysInitListener implements ServletContextListener {
                 application.setAttribute("pMap",pMap);
 
          */
+    //解析properties文件
+        Map<String,String> pmap = new HashMap<>();
+        ResourceBundle rb = ResourceBundle.getBundle("Stage2Possibility");
+        Enumeration<String> e = rb.getKeys();
+        while (e.hasMoreElements()){
+            //阶段
+            String key = e.nextElement();
+            //可能性
+            String value = rb.getString(key);
+            pmap.put(key,value);
+        }
+        application.setAttribute("pmap",pmap);
+
     }
 
     @Override
